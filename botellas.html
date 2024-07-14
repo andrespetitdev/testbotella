@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Desafío de las Botellas de Agua</title>
+    <style>
+      .botella {
+        width: 100px;
+        height: 200px;
+        border: 1px solid #000;
+        border-radius: 10px;
+        position: relative;
+        margin: 10px;
+        float: left;
+      }
+      .agua {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background-color: #00f;
+      }
+      #pasos,
+      #estado {
+        margin-top: 20px;
+      }
+      .estado {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Desafío de las Botellas de Agua</h1>
+
+    <div class="botella">
+      <div id="botellaA" class="agua" style="height: 0%"></div>
+    </div>
+    <div class="botella">
+      <div id="botellaB" class="agua" style="height: 0%"></div>
+    </div>
+
+    <label for="capacidadBotella1">Capacidad Botella 1 (X):</label>
+    <input id="capacidadBotella1" type="number" min="1" value="5" />
+    <br />
+    <label for="capacidadBotella2">Capacidad Botella 2 (Y):</label>
+    <input id="capacidadBotella2" type="number" min="1" value="3" />
+    <br />
+    <label for="cantidadMedir">Cantidad a Medir (Z):</label>
+    <input id="cantidadMedir" type="number" min="1" value="4" />
+    <br />
+    <button onclick="resultados()">Resolver</button>
+
+    <div id="pasos"></div>
+    <div id="estado" class="estado"></div>
+
+    <script>
+      function actualizarVisualizacion(
+        cantidadBotella1,
+        cantidadBotella2,
+        capacidadBotella1,
+        capacidadBotella2
+      ) {
+        document.getElementById("botellaA").style.height = `${
+          (cantidadBotella1 / capacidadBotella1) * 100
+        }%`;
+        document.getElementById("botellaB").style.height = `${
+          (cantidadBotella2 / capacidadBotella2) * 100
+        }%`;
+      }
+
+      function resultados() {
+        const capacidadBotella1 = parseInt(
+          document.getElementById("capacidadBotella1").value,
+          10
+        );
+        const capacidadBotella2 = parseInt(
+          document.getElementById("capacidadBotella2").value,
+          10
+        );
+        const cantidadAMedir = parseInt(
+          document.getElementById("cantidadMedir").value,
+          10
+        );
+
+        if (
+          isNaN(capacidadBotella1) ||
+          isNaN(capacidadBotella2) ||
+          isNaN(cantidadAMedir) ||
+          cantidadAMedir <= 0 ||
+          capacidadBotella1 <= 0 ||
+          capacidadBotella2 <= 0
+        ) {
+          document.getElementById("estado").textContent =
+            "Valores de entrada no válidos.";
+          document.getElementById("estado").style.color = "red";
+          return;
+        }
+
+        if (
+          cantidadAMedir > Math.max(capacidadBotella1, capacidadBotella2) ||
+          cantidadAMedir % calcularMcd(capacidadBotella1, capacidadBotella2) !==
+            0
+        ) {
+          document.getElementById("estado").textContent =
+            "No es posible encontrar una solución.";
+          document.getElementById("estado").style.color = "red";
+          return;
+        }
+
+        const pasos = [];
+        let cantidadBotella1 = 0;
+        let cantidadBotella2 = 0;
+
+        for (let i = 0; ; i++) {
+          if (
+            cantidadBotella1 === cantidadAMedir ||
+            cantidadBotella2 === cantidadAMedir
+          ) {
+            break;
+          }
+
+          if (cantidadBotella1 === 0) {
+            cantidadBotella1 = capacidadBotella1;
+            pasos.push("Llenar Botella 1");
+          } else if (cantidadBotella2 === capacidadBotella2) {
+            cantidadBotella2 = 0;
+            pasos.push("Vaciar Botella 2");
+          } else {
+            const transferencia = Math.min(
+              cantidadBotella1,
+              capacidadBotella2 - cantidadBotella2
+            );
+            cantidadBotella1 -= transferencia;
+            cantidadBotella2 += transferencia;
+            pasos.push(`Transferir ${transferencia} de Botella 1 a Botella 2`);
+          }
+
+          actualizarVisualizacion(
+            cantidadBotella1,
+            cantidadBotella2,
+            capacidadBotella1,
+            capacidadBotella2
+          );
+
+          if (i > 100) {
+            pasos.push("No se ha encontrado solución.");
+            break;
+          }
+        }
+
+        document.getElementById("pasos").innerHTML = pasos.join("<br/>");
+        document.getElementById("estado").textContent =
+          cantidadBotella1 === cantidadAMedir ||
+          cantidadBotella2 === cantidadAMedir
+            ? "Solución encontrada."
+            : "No se ha encontrado solución.";
+        document.getElementById("estado").style.color =
+          cantidadBotella1 === cantidadAMedir ||
+          cantidadBotella2 === cantidadAMedir
+            ? "green"
+            : "red";
+      }
+
+      function calcularMcd(a, b) {
+        while (b) [a, b] = [b, a % b];
+        return a;
+      }
+    </script>
+  </body>
+</html>
